@@ -1,0 +1,38 @@
+# Deploys and tests the flask app on webservers
+- hosts: webservers
+  become: yes
+  tasks:
+    - name: Install Python, pip3, Flask, and venv
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+        state: present
+
+    - name: Copy Flask app
+      copy:
+        src: app.py
+        dest: /home/ubuntu/flask-app/app.py
+
+    - name: Create Flask app directory
+      file:
+        path: /home/ubuntu/flask-app
+        state: directory
+        mode: '0755'
+      changed_when: false
+      check_mode: no
+
+# Install and configure HAProxy on the haproxy host
+- hosts: HAproxy
+  become: yes
+  tasks:
+    - name: Install HAProxy
+      apt:
+        name: haproxy
+        state: present
+
+    - name: Configure HAProxy
+      template:
+        src: haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
