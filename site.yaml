@@ -1,55 +1,51 @@
 - hosts: all
   become: yes
   gather_facts: yes
-# Installs and configures haproxy on the haproxy host
-- hosts: HAproxy
-  become: yes
-  tasks:
-    - name: apt update
-      apt:
-        update_cache: true
-    - name: Install haproxy
-      apt:
-        name: haproxy
-        state: present
-      
 
-    - name: Configure haproxy
-      template:
-        src: haproxy.cfg.j2
-        dest: /etc/haproxy/haproxy.cfg
-     
-# Deploys and tests the flask app on webservers
-- hosts: webservers
-  become: yes
-  tasks:
-    - name: apt update
-      apt:
-        update_cache: true
-    - name: Install Python,pip3,Flask and venv
-      apt:
-        name:
-          - python3
-          - python3-pip
-	  - python3-venv
-        state: present
+  # Installs and configures haproxy on the haproxy host
+  - hosts: HAproxy
+    become: yes
+    tasks:
+      - name: apt update
+        apt:
+          update_cache: true
+      - name: Install haproxy
+        apt:
+          name: haproxy
+          state: present
+      - name: Configure haproxy
+        template:
+          src: haproxy.cfg.j2
+          dest: /etc/haproxy/haproxy.cfg
 
-    - name: Copy Flask app
-      hosts: webservers
-      become: true
-  tasks:
-    - name: Create Flask app directory
-      file:
-        path: /home/ubuntu/flask-app
-        state: directory
-        mode: '0755'
-      changed_when: false
-      check_mode: no
-
-    - name: Copy Flask app files
-      copy:
-        src: app.py
-        dest: /home/ubuntu/flask-app/app.py
-      
-        - start flask app
- 
+  # Deploys and tests the flask app on webservers
+  - hosts: webservers
+    become: yes
+    tasks:
+      - name: apt update
+        apt:
+          update_cache: true
+      - name: Install Python,pip3,Flask and venv
+        apt:
+          name:
+            - python3
+            - python3-pip
+            - python3-venv
+          state: present
+      - name: Copy Flask app
+        hosts: webservers
+        become: true
+        tasks:
+          - name: Create Flask app directory
+            file:
+              path: /home/ubuntu/flask-app
+              state: directory
+              mode: '0755'
+            changed_when: false
+            check_mode: no
+          - name: Copy Flask app files
+            copy:
+              src: app.py
+              dest: /home/ubuntu/flask-app/app.py
+      - name: start flask app
+        command: python3 /home/ubuntu/flask-app/app.py &
