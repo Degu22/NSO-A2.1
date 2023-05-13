@@ -38,5 +38,5 @@
       check_mode: no
     - name: Copy Flask app files
       copy:
-        src: flask-app.py
-        dest: /home/ubuntu/flask-app.py
+        src: app.py
+        dest: /home/ubuntu/app.py
