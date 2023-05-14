@@ -4,6 +4,7 @@
   gather_facts: yes
 - hosts: HAproxy
   become: yes
+  become_method: sudo
   tasks:
     - name: apt update
       apt:
@@ -23,6 +24,7 @@
         state: restarted
 - hosts: webservers
   become: yes
+  become_method: sudo
   tasks:
     - name: apt update
       apt:
