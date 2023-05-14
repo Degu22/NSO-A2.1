@@ -34,14 +34,12 @@
           - python3-pip
           - python3-venv
         state: present
-    - name: Create Flask app directory
-      file:
-        path: /home/ubuntu/flask-app
-        state: directory
-        mode: "0755"
-      changed_when: false
-      check_mode: no
+    - name: Installing Gunicorn
+      apt:
+        name: gunicorn
     - name: Copy Flask app files
       copy:
         src: app.py
         dest: /home/ubuntu/app.py
+    - name: Running Flask application
+      shell: gunicorn -w 2 -D -b 0.0.0.0:8080 app:app
