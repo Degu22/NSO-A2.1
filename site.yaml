@@ -62,3 +62,21 @@
         dest: /home/ubuntu/app.py
     - name: Running Flask application
       shell: gunicorn -w 2 -D -b 0.0.0.0:8080 app:app
+    - name: install snmpd
+      apt:
+        name: snmpd
+        state: latest
+        
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        
+    - name: copy required snmpd config files
+      template:
+        src: snmpd.conf.j2
+        dest: /etc/snmp/snmpd.conf
+        
+    - name: Run snmpd service
+      service:
+        name: snmpd
+        state: restarted
