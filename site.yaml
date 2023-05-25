@@ -1,31 +1,48 @@
 ---
 - hosts: all
-  become: yes
   gather_facts: yes
 
 - hosts: webservers
   become: yes
   become_method: sudo
   tasks:
-    - name: apt update
+    - name: Update apt cache
       apt:
-        update_cache: true
-    - name: Install Python,pip3,Flask and venv
+        update_cache: yes
+
+    - name: Install required modules (Python3-pip-venv)
       apt:
         name:
           - python3
           - python3-pip
           - python3-venv
         state: present
-    - name: Installing Gunicorn
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Flask
+      become: true
+      pip:
+        executable: pip3
+        name: flask
+        state: present
+        
+    - name: Installing gunicorn for flask services
       apt:
         name: gunicorn
-    - name: Copy Flask app files
+
+
+    - name: Copy Flask app file
       copy:
-        src: app.py
-        dest: /home/ubuntu/app.py
-    - name: Running Flask application
-      shell: gunicorn -w 2 -D -b 0.0.0.0:8080 app:app
+        src: application2.py
+        dest: /home/ubuntu/application2.py
+        owner: ubuntu
+        mode: '0755'
+        
+    - name: start flask app
+      shell: gunicorn -w 2 -D -b 0.0.0.0:80 application2:app
+      
     - name: install snmpd
       apt:
         name: snmpd
@@ -44,22 +61,26 @@
       service:
         name: snmpd
         state: restarted
+      
 - hosts: HAproxy
   become: yes
   become_method: sudo
   tasks:
-    - name: apt update
+    - name: Update apt cache
       apt:
-        update_cache: true
-    - name: Install haproxy
+        update_cache: yes
+        
+    - name: Install HAproxy
       apt:
         name: haproxy
-        state: present
-    - name: Configure haproxy
+        state: latest
+
+    - name: Configuring HAproxy
       template:
         src: haproxy.cfg.j2
         dest: /etc/haproxy/haproxy.cfg
       become: yes
+      
     - name: Installing nginx,snmp and snmp-mibs-downloader
       apt:
         update_cache: yes
@@ -75,9 +96,10 @@
     - name: nginx start
       service:
         name: nginx
-        state: restarted   
-        
-    - name: restart haproxy
+        state: restarted  
+    
+
+    - name: Restarting HAproxy
       service:
         name: haproxy
         state: restarted
