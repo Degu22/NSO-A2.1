@@ -2,43 +2,7 @@
 - hosts: all
   become: yes
   gather_facts: yes
-- hosts: HAproxy
-  become: yes
-  become_method: sudo
-  tasks:
-    - name: apt update
-      apt:
-        update_cache: true
-    - name: Install haproxy
-      apt:
-        name: haproxy
-        state: present
-    - name: Configure haproxy
-      template:
-        src: haproxy.cfg.j2
-        dest: /etc/haproxy/haproxy.cfg
-      become: yes
-    - name: Installing nginx,snmp and snmp-mibs-downloader
-      apt:
-        update_cache: yes
-        name: [ 'nginx', 'snmp', 'snmp-mibs-downloader' ] 
-        state: latest
-    
-         
-    - name: copy nginx config files
-      template:
-         src: nginx.conf.j2
-         dest: /etc/nginx/nginx.conf
-         
-    - name: nginx start
-      service:
-        name: nginx
-        state: restarted   
-        
-    - name: restart haproxy
-      service:
-        name: haproxy
-        state: restarted
+
 - hosts: webservers
   become: yes
   become_method: sudo
@@ -79,4 +43,41 @@
     - name: Run snmpd service
       service:
         name: snmpd
+        state: restarted
+- hosts: HAproxy
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: apt update
+      apt:
+        update_cache: true
+    - name: Install haproxy
+      apt:
+        name: haproxy
+        state: present
+    - name: Configure haproxy
+      template:
+        src: haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+      become: yes
+    - name: Installing nginx,snmp and snmp-mibs-downloader
+      apt:
+        update_cache: yes
+        name: [ 'nginx', 'snmp', 'snmp-mibs-downloader' ] 
+        state: latest
+    
+         
+    - name: copy nginx config files
+      template:
+         src: nginx.conf.j2
+         dest: /etc/nginx/nginx.conf
+         
+    - name: nginx start
+      service:
+        name: nginx
+        state: restarted   
+        
+    - name: restart haproxy
+      service:
+        name: haproxy
         state: restarted
